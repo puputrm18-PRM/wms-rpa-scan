@@ -83,9 +83,10 @@ scanBtn.addEventListener("click",async()=>{
   }
 });
 
+const URL_WMS = "https://script.google.com/macros/s/AKfycbyKgMj9ZFOvbItgYoot4Kb4BRiiHVmcWFQNWM4hagHXY9q6ILzWQcRpgRKB5lTCUUB0/exec";
+
 simpan.addEventListener("click", async () => {
   const hasil = document.getElementById("hasil");
-  hasil.textContent = "Menyiapkan transaksi...";
 
   const data = {
     qr: qr.value.trim(),
@@ -104,7 +105,7 @@ simpan.addEventListener("click", async () => {
   }
 
   hasil.textContent =
-    "Form siap, tetapi koneksi Apps Script belum diaktifkan.";
+    "Koneksi belum siap. Transaksi belum dikirim.";
 });
 </script>
 </body>
