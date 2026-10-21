@@ -2,115 +2,239 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WMS RPA Scan</title>
-<script src="https://unpkg.com/html5-qrcode"></script>
-<style>
-body{font-family:Arial;background:#fce7f3;padding:20px;color:#172554}
-main{max-width:450px;margin:auto;background:white;padding:20px;border-radius:18px}
-button,input,select{box-sizing:border-box;width:100%;padding:13px;margin:7px 0;border-radius:10px}
-button{border:0;background:#172554;color:white;font-size:16px}
-textarea{box-sizing:border-box;width:100%;padding:12px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WMS RPA Scan</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #fce7f3;
+      padding: 16px;
+      color: #172554;
+      margin: 0;
+    }
+
+    main {
+      max-width: 450px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px #17255418;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 14px;
+    }
+
+    button, input, select, textarea {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0;
+      border-radius: 10px;
+      font: inherit;
+    }
+
+    input, select, textarea {
+      border: 1px solid #cbd5e1;
+      background: white;
+    }
+
+    button {
+      border: 0;
+      background: #172554;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    #status, #hasil {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    .pink {
+      background: #db2777;
+    }
+  </style>
 </head>
+
 <body>
-<main>
-<h2>WMS RPA 📦</h2>
-<div id="reader"></div>
-<button id="scan">BUKA KAMERA</button>
-<p id="status">Siap scan.</p>
+  <main>
+    <h2>WMS RPA 📦</h2>
 
-<label>Hasil QR</label>
-<textarea id="qr" rows="6" placeholder="Scan label barang"></textarea>
+    <div id="reader"></div>
 
-<label>Jenis transaksi</label>
-<select id="jenis">
-<option value="IN">IN — Barang masuk</option>
-<option value="OUT">OUT — Barang keluar</option>
-</select>
+    <button type="button" id="scan">BUKA KAMERA</button>
+    <p id="status">Siap scan.</p>
 
-<label>Gudang asal</label>
-<input id="asal" placeholder="Contoh: GPR1">
+    <label for="qr">Hasil QR</label>
+    <textarea
+      id="qr"
+      rows="6"
+      placeholder="Scan label barang"
+    ></textarea>
 
-<label>Gudang tujuan</label>
-<input id="tujuan" placeholder="Contoh: GU01">
+    <label for="jenis">Jenis transaksi</label>
+    <select id="jenis">
+      <option value="IN">IN — Barang masuk</option>
+      <option value="OUT">OUT — Barang keluar</option>
+    </select>
 
-<label>Batch</label>
-<input id="batch" placeholder="Nomor batch">
+    <label for="asal">Gudang asal</label>
+    <input id="asal" placeholder="Contoh: GPR1">
 
-<label>PCS/Ekor aktual</label>
-<input id="pcs" type="number" min="0" step="any" placeholder="Jumlah aktual">
+    <label for="tujuan">Gudang tujuan</label>
+    <input id="tujuan" placeholder="Contoh: GU01">
 
-<label>KG aktual</label>
-<input id="kg" type="number" min="0" step="any" placeholder="Berat aktual">
+    <label for="batch">Batch</label>
+    <input id="batch" placeholder="Nomor batch">
 
-<label>PIC</label>
-<input id="pic" placeholder="Nama petugas">
+    <label for="pcs">PCS/Ekor aktual</label>
+    <input
+      id="pcs"
+      type="number"
+      min="0"
+      step="any"
+      placeholder="Jumlah aktual"
+    >
 
-<button id="simpan" disabled>KIRIM TRANSAKSI</button>
-<p id="hasil"></p>
-</main>
+    <label for="kg">KG aktual</label>
+    <input
+      id="kg"
+      type="number"
+      min="0"
+      step="any"
+      placeholder="Berat aktual"
+    >
 
-<script>
-let scanner;
-const scanBtn=document.getElementById("scan");
-const qr=document.getElementById("qr");
-const status=document.getElementById("status");
-const simpan=document.getElementById("simpan");
+    <label for="pic">PIC</label>
+    <input id="pic" placeholder="Nama petugas">
 
-scanBtn.addEventListener("click",async()=>{
-  scanBtn.disabled=true;
-  status.textContent="Menyiapkan kamera...";
-  try{
-    if(typeof Html5Qrcode==="undefined") throw Error("Library scanner gagal dimuat.");
-    if(!scanner) scanner=new Html5Qrcode("reader");
-    await scanner.start(
-      {facingMode:"environment"},
-      {fps:10,qrbox:{width:250,height:250}},
-      async teks=>{
-        qr.value=teks;
-        status.textContent="QR terbaca. Lengkapi data transaksi.";
-        simpan.disabled=false;
-        await scanner.stop();
-        scanBtn.disabled=false;
+    <button type="button" id="simpan" class="pink" disabled>
+      BUKA FORM PENYIMPANAN
+    </button>
+
+    <p id="hasil" role="status"></p>
+  </main>
+
+  <script>
+    "use strict";
+
+    const URL_WMS =
+      "https://script.google.com/macros/s/AKfycbyKgMj9ZFOvbItgYoot4Kb4BRiiHVmcWFQNWM4hagHXY9q6ILzWQcRpgRKB5lTCUUB0/exec";
+
+    const scanBtn = document.getElementById("scan");
+    const qr = document.getElementById("qr");
+    const status = document.getElementById("status");
+    const simpan = document.getElementById("simpan");
+    const hasil = document.getElementById("hasil");
+
+    let scanner = null;
+    let kameraAktif = false;
+    let memprosesQR = false;
+
+    qr.addEventListener("input", () => {
+      simpan.disabled = !qr.value.trim();
+    });
+
+    scanBtn.addEventListener("click", async () => {
+      if (kameraAktif) {
+        try {
+          await scanner.stop();
+          kameraAktif = false;
+          scanBtn.textContent = "BUKA KAMERA";
+          status.textContent = "Kamera dihentikan.";
+        } catch (err) {
+          status.textContent = "Gagal menghentikan kamera: " + err.message;
+        }
+        return;
       }
-    );
-    status.textContent="Kamera aktif. Arahkan ke QR.";
-  }catch(e){
-    status.textContent="Gagal: "+e.message;
-    scanBtn.disabled=false;
-  }
-});
 
-const URL_WMS = "https://script.google.com/macros/s/AKfycbyKgMj9ZFOvbItgYoot4Kb4BRiiHVmcWFQNWM4hagHXY9q6ILzWQcRpgRKB5lTCUUB0/exec";
+      scanBtn.disabled = true;
+      status.textContent = "Menyiapkan kamera...";
 
+      try {
+        if (typeof Html5Qrcode === "undefined") {
+          throw new Error("Library scanner gagal dimuat.");
+        }
 
-const URL_WMS = "https://script.google.com/macros/s/AKfycbyKgMj9ZFOvbItgYoot4Kb4BRiiHVmcWFQNWM4hagHXY9q6ILzWQcRpgRKB5lTCUUB0/exec";
+        if (!scanner) {
+          scanner = new Html5Qrcode("reader");
+        }
 
-simpan.addEventListener("click", () => {
-  const isiQR = qr.value.trim();
-  const hasil = document.getElementById("hasil");
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          async (teks) => {
+            if (memprosesQR) return;
+            memprosesQR = true;
 
-  if (!isiQR) {
-    hasil.textContent = "QR belum terbaca.";
-    return;
-  }
+            qr.value = teks;
+            simpan.disabled = false;
+            status.textContent = "QR terbaca. Periksa isi QR sebelum melanjutkan.";
 
-  hasil.textContent = "Membuka form penyimpanan...";
+            try {
+              await scanner.stop();
+              kameraAktif = false;
+              scanBtn.textContent = "BUKA KAMERA";
+            } catch (err) {
+              status.textContent =
+                "QR terbaca, tetapi kamera belum berhenti: " + err.message;
+            }
 
-  window.location.href =
-    URL_WMS + "?qr=" + encodeURIComponent(isiQR);
-});
+            scanBtn.disabled = false;
+            memprosesQR = false;
+          }
+        );
 
-  if (!data.qr || !data.pic) {
-    hasil.textContent = "QR dan PIC wajib diisi.";
-    return;
-  }
+        kameraAktif = true;
+        scanBtn.textContent = "HENTIKAN KAMERA";
+        status.textContent = "Kamera aktif. Arahkan ke QR.";
+      } catch (err) {
+        status.textContent = "Gagal membuka kamera: " + err.message;
+        scanBtn.disabled = false;
+        kameraAktif = false;
+      }
+    });
 
-  hasil.textContent =
-    "Koneksi belum siap. Transaksi belum dikirim.";
-});
-</script>
+    simpan.addEventListener("click", () => {
+      const isiQR = qr.value.trim();
+
+      if (!isiQR) {
+        hasil.textContent = "QR belum terbaca.";
+        return;
+      }
+
+      hasil.textContent = "Membuka form penyimpanan Apps Script...";
+
+      const url = URL_WMS + "?qr=" + encodeURIComponent(isiQR);
+      window.location.href = url;
+    });
+  </script>
 </body>
 </html>
