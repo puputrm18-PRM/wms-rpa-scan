@@ -83,9 +83,28 @@ scanBtn.addEventListener("click",async()=>{
   }
 });
 
-simpan.addEventListener("click",()=>{
-  document.getElementById("hasil").textContent=
-    "Form siap. Koneksi penyimpanan belum dikonfigurasi; transaksi belum dikirim.";
+simpan.addEventListener("click", async () => {
+  const hasil = document.getElementById("hasil");
+  hasil.textContent = "Menyiapkan transaksi...";
+
+  const data = {
+    qr: qr.value.trim(),
+    jenis: document.getElementById("jenis").value,
+    gudangAsal: document.getElementById("asal").value.trim(),
+    gudangTujuan: document.getElementById("tujuan").value.trim(),
+    batch: document.getElementById("batch").value.trim(),
+    pcs: document.getElementById("pcs").value,
+    kg: document.getElementById("kg").value,
+    pic: document.getElementById("pic").value.trim()
+  };
+
+  if (!data.qr || !data.pic) {
+    hasil.textContent = "QR dan PIC wajib diisi.";
+    return;
+  }
+
+  hasil.textContent =
+    "Form siap, tetapi koneksi Apps Script belum diaktifkan.";
 });
 </script>
 </body>
