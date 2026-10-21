@@ -9,7 +9,8 @@
 <style>
 body{font-family:Arial;background:#fce7f3;padding:20px;color:#172554}
 main{max-width:450px;margin:auto;background:white;padding:20px;border-radius:18px}
-button{width:100%;padding:14px;margin:8px 0;border:0;border-radius:10px;background:#172554;color:white;font-size:16px}
+button,input,select{box-sizing:border-box;width:100%;padding:13px;margin:7px 0;border-radius:10px}
+button{border:0;background:#172554;color:white;font-size:16px}
 textarea{box-sizing:border-box;width:100%;padding:12px}
 </style>
 </head>
@@ -17,34 +18,74 @@ textarea{box-sizing:border-box;width:100%;padding:12px}
 <main>
 <h2>WMS RPA 📦</h2>
 <div id="reader"></div>
-<textarea id="qr" rows="5" placeholder="Hasil QR"></textarea>
 <button id="scan">BUKA KAMERA</button>
 <p id="status">Siap scan.</p>
+
+<label>Hasil QR</label>
+<textarea id="qr" rows="6" placeholder="Scan label barang"></textarea>
+
+<label>Jenis transaksi</label>
+<select id="jenis">
+<option value="IN">IN — Barang masuk</option>
+<option value="OUT">OUT — Barang keluar</option>
+</select>
+
+<label>Gudang asal</label>
+<input id="asal" placeholder="Contoh: GPR1">
+
+<label>Gudang tujuan</label>
+<input id="tujuan" placeholder="Contoh: GU01">
+
+<label>Batch</label>
+<input id="batch" placeholder="Nomor batch">
+
+<label>PCS/Ekor aktual</label>
+<input id="pcs" type="number" min="0" step="any" placeholder="Jumlah aktual">
+
+<label>KG aktual</label>
+<input id="kg" type="number" min="0" step="any" placeholder="Berat aktual">
+
+<label>PIC</label>
+<input id="pic" placeholder="Nama petugas">
+
+<button id="simpan" disabled>KIRIM TRANSAKSI</button>
+<p id="hasil"></p>
 </main>
+
 <script>
-const tombol = document.getElementById("scan");
-tombol.addEventListener("click", async function(){
- const status = document.getElementById("status");
- status.textContent = "Menyiapkan kamera...";
- tombol.disabled = true;
- try {
-  if(typeof Html5Qrcode === "undefined") throw Error("Library scanner gagal dimuat. Periksa internet.");
-  const scanner = new Html5Qrcode("reader");
-  await scanner.start(
-   {facingMode:"environment"},
-   {fps:10,qrbox:{width:250,height:250}},
-   async teks => {
-    document.getElementById("qr").value = teks;
-    status.textContent = "QR berhasil dibaca!";
-    await scanner.stop();
-    tombol.disabled = false;
-   }
-  );
-  status.textContent = "Kamera aktif. Arahkan ke QR.";
- } catch(e) {
-  status.textContent = "Gagal: " + e.message;
-  tombol.disabled = false;
- }
+let scanner;
+const scanBtn=document.getElementById("scan");
+const qr=document.getElementById("qr");
+const status=document.getElementById("status");
+const simpan=document.getElementById("simpan");
+
+scanBtn.addEventListener("click",async()=>{
+  scanBtn.disabled=true;
+  status.textContent="Menyiapkan kamera...";
+  try{
+    if(typeof Html5Qrcode==="undefined") throw Error("Library scanner gagal dimuat.");
+    if(!scanner) scanner=new Html5Qrcode("reader");
+    await scanner.start(
+      {facingMode:"environment"},
+      {fps:10,qrbox:{width:250,height:250}},
+      async teks=>{
+        qr.value=teks;
+        status.textContent="QR terbaca. Lengkapi data transaksi.";
+        simpan.disabled=false;
+        await scanner.stop();
+        scanBtn.disabled=false;
+      }
+    );
+    status.textContent="Kamera aktif. Arahkan ke QR.";
+  }catch(e){
+    status.textContent="Gagal: "+e.message;
+    scanBtn.disabled=false;
+  }
+});
+
+simpan.addEventListener("click",()=>{
+  document.getElementById("hasil").textContent=
+    "Form siap. Koneksi penyimpanan belum dikonfigurasi; transaksi belum dikirim.";
 });
 </script>
 </body>
