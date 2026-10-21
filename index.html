@@ -1,77 +1,51 @@
-```html
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WMS RPA Scan</title>
-
-<script>
-let scanner;
-async function mulaiScan() {
-  const status = document.getElementById("status");
-  status.textContent = "Menyiapkan kamera...";
-  try {
-    if (typeof Html5Qrcode === "undefined") {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = "https://unpkg.com/html5-qrcode";
-        s.onload = resolve;
-        s.onerror = () => reject(new Error("Gagal memuat scanner"));
-        document.head.appendChild(s);
-      });
-    }
-    if (!scanner) scanner = new Html5Qrcode("reader");
-    await scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      async hasil => {
-        document.getElementById("qr").value = hasil;
-        status.textContent = "QR berhasil dibaca!";
-        await scanner.stop();
-      }
-    );
-    status.textContent = "Kamera aktif. Arahkan ke QR.";
-  } catch (e) {
-    status.textContent = "Gagal: " + e.message;
-  }
-}
-function salinQR() {
-  const teks = document.getElementById("qr").value;
-  if (!teks) {
-    document.getElementById("status").textContent = "Scan QR terlebih dahulu.";
-    return;
-  }
-  navigator.clipboard.writeText(teks)
-    .then(() => document.getElementById("status").textContent = "QR disalin!")
-    .catch(() => document.getElementById("status").textContent = "Gagal menyalin QR.");
-}
-</script>
-
+<script src="https://unpkg.com/html5-qrcode"></script>
 <style>
-body{font-family:Arial;background:#fce7f3;margin:0;padding:20px;color:#172554}
+body{font-family:Arial;background:#fce7f3;padding:20px;color:#172554}
 main{max-width:450px;margin:auto;background:white;padding:20px;border-radius:18px}
-h2{text-align:center}
 button{width:100%;padding:14px;margin:8px 0;border:0;border-radius:10px;background:#172554;color:white;font-size:16px}
-textarea,input,select{box-sizing:border-box;width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:8px}
-#reader{margin-top:12px}
+textarea{box-sizing:border-box;width:100%;padding:12px}
 </style>
 </head>
 <body>
 <main>
 <h2>WMS RPA 📦</h2>
-<p>Scan QR barang</p>
 <div id="reader"></div>
-<textarea id="qr" rows="5" placeholder="Hasil scan QR muncul di sini"></textarea>
-<button onclick="mulaiScan()">BUKA KAMERA</button>
-<button onclick="salinQR()">SALIN HASIL QR</button>
+<textarea id="qr" rows="5" placeholder="Hasil QR"></textarea>
+<button id="scan">BUKA KAMERA</button>
 <p id="status">Siap scan.</p>
 </main>
 <script>
-let scanner;
-async function mulaiScan(){
- try{
-  if(!scanner) scanner=new Html5Qrcode("reader");
+const tombol = document.getElementById("scan");
+tombol.addEventListener("click", async function(){
+ const status = document.getElementById("status");
+ status.textContent = "Menyiapkan kamera...";
+ tombol.disabled = true;
+ try {
+  if(typeof Html5Qrcode === "undefined") throw Error("Library scanner gagal dimuat. Periksa internet.");
+  const scanner = new Html5Qrcode("reader");
   await scanner.start(
    {facingMode:"environment"},
-   {fps:10,qrbox:{
+   {fps:10,qrbox:{width:250,height:250}},
+   async teks => {
+    document.getElementById("qr").value = teks;
+    status.textContent = "QR berhasil dibaca!";
+    await scanner.stop();
+    tombol.disabled = false;
+   }
+  );
+  status.textContent = "Kamera aktif. Arahkan ke QR.";
+ } catch(e) {
+  status.textContent = "Gagal: " + e.message;
+  tombol.disabled = false;
+ }
+});
+</script>
+</body>
+</html>
