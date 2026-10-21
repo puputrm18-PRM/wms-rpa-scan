@@ -85,19 +85,23 @@ scanBtn.addEventListener("click",async()=>{
 
 const URL_WMS = "https://script.google.com/macros/s/AKfycbyKgMj9ZFOvbItgYoot4Kb4BRiiHVmcWFQNWM4hagHXY9q6ILzWQcRpgRKB5lTCUUB0/exec";
 
-simpan.addEventListener("click", async () => {
+
+const URL_WMS = "https://script.google.com/macros/s/AKfycbyKgMj9ZFOvbItgYoot4Kb4BRiiHVmcWFQNWM4hagHXY9q6ILzWQcRpgRKB5lTCUUB0/exec";
+
+simpan.addEventListener("click", () => {
+  const isiQR = qr.value.trim();
   const hasil = document.getElementById("hasil");
 
-  const data = {
-    qr: qr.value.trim(),
-    jenis: document.getElementById("jenis").value,
-    gudangAsal: document.getElementById("asal").value.trim(),
-    gudangTujuan: document.getElementById("tujuan").value.trim(),
-    batch: document.getElementById("batch").value.trim(),
-    pcs: document.getElementById("pcs").value,
-    kg: document.getElementById("kg").value,
-    pic: document.getElementById("pic").value.trim()
-  };
+  if (!isiQR) {
+    hasil.textContent = "QR belum terbaca.";
+    return;
+  }
+
+  hasil.textContent = "Membuka form penyimpanan...";
+
+  window.location.href =
+    URL_WMS + "?qr=" + encodeURIComponent(isiQR);
+});
 
   if (!data.qr || !data.pic) {
     hasil.textContent = "QR dan PIC wajib diisi.";
